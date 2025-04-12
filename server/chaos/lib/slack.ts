@@ -8,7 +8,7 @@ const app = new App({
   signingSecret: process.env.SLACK_BOT_SIGNING_SECRET,
   appToken: process.env.SLACK_APP_TOKEN,
   socketMode: true,
-  logLevel: LogLevel.DEBUG,
+  logLevel: LogLevel.INFO,
 });
 
 const userStore: Record<string, string> = {};

@@ -14,10 +14,10 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "better-sqlite3",
       "esbuild",
-      "sqlite3",
-      "better-sqlite3", 
-      "sharp"
+      "sharp",
+      "sqlite3"
     ]
   }
 }

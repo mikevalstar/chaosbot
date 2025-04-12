@@ -1,20 +1,13 @@
 import 'dotenv/config';
 
-import fastify from 'fastify';
-
 import corechat from './actors/corechat';
+import './api/index';
 import { coreboot } from './jobs/coreboot';
+import fastifyServer from './lib/fastify';
 import logger from './lib/log';
 import slackApp from './lib/slack';
 
-// fastify initialization
-const server = fastify();
-
-server.get('/api/ping', async (request, reply) => {
-  return 'pong\n';
-});
-
-server.listen({ port: Number(process.env.PORT) || 8080 }, (err, address) => {
+fastifyServer.listen({ port: Number(process.env.PORT) || 8080 }, (err, address) => {
   if (err) {
     logger.error(err);
     process.exit(1);

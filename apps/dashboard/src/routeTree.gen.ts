@@ -12,12 +12,26 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as MemoryIndexImport } from './routes/memory/index'
+import { Route as MemoryUsersImport } from './routes/memory/users'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MemoryIndexRoute = MemoryIndexImport.update({
+  id: '/memory/',
+  path: '/memory/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MemoryUsersRoute = MemoryUsersImport.update({
+  id: '/memory/users',
+  path: '/memory/users',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +46,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/memory/users': {
+      id: '/memory/users'
+      path: '/memory/users'
+      fullPath: '/memory/users'
+      preLoaderRoute: typeof MemoryUsersImport
+      parentRoute: typeof rootRoute
+    }
+    '/memory/': {
+      id: '/memory/'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof MemoryIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/memory/users': typeof MemoryUsersRoute
+  '/memory': typeof MemoryIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/memory/users': typeof MemoryUsersRoute
+  '/memory': typeof MemoryIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/memory/users': typeof MemoryUsersRoute
+  '/memory/': typeof MemoryIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/memory/users' | '/memory'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/memory/users' | '/memory'
+  id: '__root__' | '/' | '/memory/users' | '/memory/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MemoryUsersRoute: typeof MemoryUsersRoute
+  MemoryIndexRoute: typeof MemoryIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MemoryUsersRoute: MemoryUsersRoute,
+  MemoryIndexRoute: MemoryIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +115,19 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/memory/users",
+        "/memory/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/memory/users": {
+      "filePath": "memory/users.tsx"
+    },
+    "/memory/": {
+      "filePath": "memory/index.tsx"
     }
   }
 }

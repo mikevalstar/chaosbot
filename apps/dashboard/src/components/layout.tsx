@@ -37,6 +37,7 @@ const navigation = [
     name: 'Bot',
     items: [
       { name: 'Memory', href: '/memory', icon: PiggyBank },
+      { name: 'User Memory', href: '/memory/users', icon: PiggyBank },
       { name: 'Settings', href: '/settings', icon: Wallet },
       { name: 'Logs', href: '/logs', icon: BarChart3 },
     ],
