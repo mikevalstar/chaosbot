@@ -2,13 +2,16 @@ import { Link } from '@tanstack/react-router';
 import {
   ArrowUpCircleIcon,
   BarChart3,
+  Bot,
+  Brain,
   CheckSquare,
-  Heart,
   Home,
+  LayoutDashboard,
+  LogOut,
   Moon,
-  PiggyBank,
+  Settings,
   Sun,
-  Wallet,
+  Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -27,18 +30,20 @@ import {
 const navigation = [
   {
     name: 'Main',
+    icon: LayoutDashboard,
     items: [
       { name: 'Dashboard', href: '/', icon: Home },
-      { name: 'Events', href: '/events', icon: Heart },
+      { name: 'Events', href: '/events', icon: LogOut },
       { name: 'TODO', href: '/todo', icon: CheckSquare },
     ],
   },
   {
     name: 'Bot',
+    icon: Bot,
     items: [
-      { name: 'Memory', href: '/memory', icon: PiggyBank },
-      { name: 'User Memory', href: '/memory/users', icon: PiggyBank },
-      { name: 'Settings', href: '/settings', icon: Wallet },
+      { name: 'Memory', href: '/memory', icon: Brain },
+      { name: 'User Memory', href: '/memory/users', icon: Users },
+      { name: 'Settings', href: '/settings', icon: Settings },
       { name: 'Logs', href: '/logs', icon: BarChart3 },
     ],
   },
@@ -78,7 +83,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
           {navigation.map((section) => (
             <div key={section.name} className='mb-6'>
-              <h3 className='px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider'>
+              <h3 className='px-2 text-sm font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3'>
+                <section.icon className='h-4 w-4' />
                 {section.name}
               </h3>
               <SidebarMenu>
