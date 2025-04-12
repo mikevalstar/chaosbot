@@ -18,6 +18,7 @@ export default function Dashboard() {
                   </p>
                   <div className='space-y-2'>
                     <h2 className='text-xl font-semibold text-foreground'>How it Works</h2>
+                    <img src='/how-chaosbot-works.gif' alt='How it works' />
                     <p className='text-muted-foreground leading-relaxed'>
                       Visit{' '}
                       <a
@@ -28,6 +29,9 @@ export default function Dashboard() {
                         https://github.com/mikevalstar/chaosbot
                       </a>{' '}
                       and create a pull request. The bot will auto merge your requests then reboot.
+                    </p>
+                    <p className='text-muted-foreground leading-relaxed'>
+                      Lets hope your vibe coding is good.
                     </p>
                   </div>
                   <div className='space-y-2'>
