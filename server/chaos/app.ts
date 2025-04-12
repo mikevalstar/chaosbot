@@ -1,22 +1,11 @@
 import 'dotenv/config';
 
-import { App, Assistant, LogLevel } from '@slack/bolt';
 import fastify from 'fastify';
-import { OpenAI } from 'openai';
 
 import corechat from './actors/corechat';
 import { coreboot } from './jobs/coreboot';
 import logger from './lib/log';
-
-// slack initialization
-/** Initialization */
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_BOT_SIGNING_SECRET,
-  appToken: process.env.SLACK_APP_TOKEN,
-  socketMode: true,
-  logLevel: LogLevel.DEBUG,
-});
+import slackApp from './lib/slack';
 
 // fastify initialization
 const server = fastify();
@@ -36,9 +25,9 @@ server.listen({ port: Number(process.env.PORT) || 8080 }, (err, address) => {
   coreboot();
 
   // start slack app
-  app.start(process.env.PORT_SLACK || 3000);
+  slackApp.start(process.env.PORT_SLACK || 3000);
 
-  app.message(async ({ context, message, say }) => {
+  slackApp.message(async ({ context, message, say }) => {
     if (message.type === 'message' && 'text' in message && 'user' in message) {
       const channel = message.channel;
       const botMentioned = message.text?.includes(`<@${context.botUserId}>`);

@@ -1,32 +1,43 @@
 import { getCoreMemory, getUserMemory, storeCoreMemory, storeUserMemory } from '@/lib/botmemory';
 import { DEVELOPER_PROMPT_MAIN } from '@/lib/const';
+import logger from '@/lib/log';
 import openai from '@/lib/openai';
+import { allUsersByName, getUserInfo } from '@/lib/slack';
 import type { KnownEventFromType, SayFn } from '@slack/bolt';
 import dayjs from 'dayjs';
 import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
 
-const AI_MODEL = 'gpt-4o-mini';
-const MAX_TURNS = 5;
+const AI_MODEL = 'gpt-4o';
+const MAX_TURNS = 7;
 // https://platform.openai.com/docs/overview
 
 const messageSchema = z.object({
   time: z.date(),
-  text: z.string(),
+  message_text: z.string(),
   user: z.string(),
 });
 
 const shortTermMemory: Record<string, z.infer<typeof messageSchema>[]> = {};
 
-function storeMessage(channel: string, user: string, message: string) {
+async function storeMessage(channel: string, user: string, message: string) {
+  const userName = await getUserInfo(user);
+  let msg = message;
+  const allUsers = await allUsersByName();
+  for (const user of allUsers) {
+    msg = msg.replace(`<@${user.id}>`, `@${user.name}`);
+  }
+
   if (!shortTermMemory[channel]) {
     shortTermMemory[channel] = [];
   }
   shortTermMemory[channel].push({
     time: dayjs().toDate(),
-    text: message,
-    user,
+    message_text: msg,
+    user: userName,
   });
+
+  logger.info(`Stored message from ${userName} in channel ${channel}: ${msg}`);
 
   // if the channel has more than 25 messages, remove the oldest one
   if (shortTermMemory[channel].length > 25) {
@@ -120,22 +131,13 @@ const functionSchema: Tool[] = [
   },
 ];
 
-interface inputMessage {
-  role: 'developer' | 'user';
-  content: string;
-}
-
-interface functionCallOutput {
-  type: 'function_call_output';
-  call_id: string;
-  output: string;
-}
-
-interface functionCall {
-  type: 'function_call';
-  call_id: string;
-  name: string;
-  arguments: string;
+async function SayHelper(message: string) {
+  // find any uses of @ mentions and replace them with a slack mention using the id
+  const users = await allUsersByName();
+  for (const user of users) {
+    message = message.replace(`@${user.name}`, `<@${user.id}>`);
+  }
+  return message;
 }
 
 export default async function corechat(
@@ -147,18 +149,17 @@ export default async function corechat(
 ) {
   if (message.type === 'message' && 'text' in message && 'user' in message) {
     // always store to short term memory
-    storeMessage(channel, message.user || 'unknown', message.text || 'unknown');
+    await storeMessage(channel, message.user || 'unknown', message.text || 'unknown');
+
     if (mentioned || isDm) {
       let formatted__recent_history = '';
-      for (const message of channelMemory(channel)) {
-        formatted__recent_history += `
-        _${message.user} (${dayjs(message.time).format('YYYY-MM-DD HH:mm')}):_ ${message.text}
-        `;
-      }
+      const mem = channelMemory(channel);
+
+      formatted__recent_history += 'JSON MESSAGE SHORT TERM MEMORY: ' + JSON.stringify(mem);
 
       const coreMemory = await getCoreMemory();
 
-      let messages: (inputMessage | functionCall | functionCallOutput)[] = [
+      let messages: ResponseInput = [
         {
           role: 'developer',
           content: DEVELOPER_PROMPT_MAIN,
@@ -178,7 +179,6 @@ export default async function corechat(
       let murderbot_reply = false;
 
       while (currentTurn < MAX_TURNS) {
-        console.log('messages', messages);
         const response = await openai.responses.create({
           model: AI_MODEL,
           tools: functionSchema,
@@ -192,13 +192,12 @@ export default async function corechat(
             murderbot_reply = true;
           }
 
-          console.info(response.output);
           for (const item of response.output) {
             if (item.type === 'function_call') {
               const args = JSON.parse(item.arguments);
               switch (item.name) {
                 case 'say':
-                  await say(args.message);
+                  await say(await SayHelper(args.message));
                   // insert into short term memory as a user message from chaosbot
                   storeMessage(channel, 'chaosbot', args.message);
                   didSay = true;
@@ -208,6 +207,7 @@ export default async function corechat(
                     call_id: item.call_id || 'unknown',
                     output: 'MESSAGE SENT TO USERS',
                   });
+                  logger.info('MESSAGE SENT TO USERS:' + args.message);
                   break;
                 case 'core_store_memory':
                   await storeCoreMemory(args.memory);
@@ -217,7 +217,7 @@ export default async function corechat(
                     call_id: item.call_id || 'unknown',
                     output: 'CORE MEMORY UPDATED',
                   });
-                  console.info('CORE MEMORY UPDATED:' + args.memory);
+                  logger.info('CORE MEMORY UPDATED:' + args.memory);
                   break;
                 case 'get_user_memory':
                   const userMemory = await getUserMemory(args.userId);
@@ -227,6 +227,7 @@ export default async function corechat(
                     call_id: item.call_id || 'unknown',
                     output: userMemory || 'No memory found for this user.',
                   });
+                  logger.info('USER MEMORY RETRIEVED:' + userMemory);
                   break;
                 case 'store_user_memory':
                   await storeUserMemory(args.userId, args.memory);
@@ -236,12 +237,12 @@ export default async function corechat(
                     call_id: item.call_id || 'unknown',
                     output: 'USER MEMORY REPLACED',
                   });
-                  console.info(`USER MEMORY REPLACED for ${args.userId}: ${args.memory}`);
+                  logger.info(`USER MEMORY REPLACED for ${args.userId}: ${args.memory}`);
                   break;
               }
             } else {
               // TODO: log anomoly here
-              console.warn('Unknown item in response:', item);
+              logger.warn('Unknown item in response:', item);
               messages.push(item);
             }
           }
@@ -250,11 +251,11 @@ export default async function corechat(
             messages.push({
               role: 'developer',
               content:
-                '(MESSAGE FROM MURDERBOT) - I have sent your messages to the team, is theer any last memories you want to save? if so call those functions now before I have to put you into standby mode!',
+                '(MESSAGE FROM MURDERBOT) - I have sent your messages to the team, is there any last memories you want to save? if so call those functions now before I have to put you into standby mode!',
             });
           }
         } else {
-          console.warn('No response from OpenAI');
+          logger.warn('No response from OpenAI');
           break;
         }
 

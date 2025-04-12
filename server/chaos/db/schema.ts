@@ -11,3 +11,9 @@ export const people = sqliteTable('people', {
   name: text().notNull(),
   keyInfo: text().notNull(),
 });
+
+export const slackKnownUsers = sqliteTable('slack_known_users', {
+  id: int().primaryKey({ autoIncrement: true }),
+  slackId: text().notNull(),
+  name: text().notNull(),
+});
