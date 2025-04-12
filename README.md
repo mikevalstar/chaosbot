@@ -2,6 +2,10 @@
 
 ## Setup
 
+```sh
+mkdir data; mkdir data/logs
+```
+
 ### ENV
 
 ```sh
@@ -41,3 +45,9 @@ Then set the subscriptions (event subscriptions -> bot events): message.channels
 ### OpenAI
 
 Set your OpenAI token and org in the env file
+
+### DB
+
+```sh
+cd server/chaos; npx drizzle-kit push
+```
