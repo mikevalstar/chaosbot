@@ -12,14 +12,20 @@
   "license": "GLWTPL",
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "drizzle-kit": "^0.30.6",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.3",
+    "@slack/bolt": "^4.2.1",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.41.0",
     "fastify": "^5.2.2",
+    "openai": "^4.93.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "zod": "4.0.0-beta.20250412T085909"

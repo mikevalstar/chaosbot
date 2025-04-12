@@ -8,7 +8,7 @@ alwaysApply: true
 
 - we use zod for validation
 - the frontend uses tanstack router and tanstack query
-- the backend uses fastify
+- the backend uses fastify and drizzle-orm
 
 # Project goals
 This projects goal is to create a slackbot with a web dashboard that is an agent of chaos, it will both help it's team in slack, and to have a memory. It is also intended to be modified by the team members in a way that allows rapid chaotic changes.
