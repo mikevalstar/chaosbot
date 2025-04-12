@@ -29,6 +29,8 @@ export default function Dashboard() {
                         https://github.com/mikevalstar/chaosbot
                       </a>{' '}
                       and create a pull request. The bot will auto merge your requests then reboot.
+                      (note: you need to make a MR to add yourself to the allow list, and get it
+                      manuyally merged for now)
                     </p>
                     <p className='text-muted-foreground leading-relaxed'>
                       Lets hope your vibe coding is good.

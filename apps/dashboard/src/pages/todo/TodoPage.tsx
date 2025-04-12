@@ -17,6 +17,21 @@ const TODOS = [
     text: 'Add more personality traits',
     completed: false,
   },
+  {
+    id: '4',
+    text: 'Team event management',
+    completed: false,
+  },
+  {
+    id: '5',
+    text: 'Better MR checks like that it will actually build',
+    completed: false,
+  },
+  {
+    id: '6',
+    text: 'A way to manage who can submit MRs',
+    completed: false,
+  },
 ];
 
 export default function TodoPage() {
