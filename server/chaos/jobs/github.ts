@@ -1,6 +1,8 @@
 //import { Octokit } from 'octokit';
 import logger from '../lib/log';
 
+const validUsers = ['mikevalstar'];
+
 export async function githubCheckPRs() {
   const { Octokit } = await import('octokit');
 
@@ -15,22 +17,24 @@ export async function githubCheckPRs() {
 
   // for each one squash and merge
   for (const pr of prs) {
-    logger.info(`Squashing and merging PR ${pr.number}`);
-    try {
-      const data = await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge', {
-        owner: 'mikevalstar',
-        repo: 'chaosbot',
-        pull_number: pr.number,
-        merge_method: 'squash',
-        commit_title: pr.title,
-        commit_message: 'Auto merged by the agent of chaos',
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-      logger.info(`Squashed and merged PR ${pr.number}: ${data}`);
-    } catch (error) {
-      logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
+    if (validUsers.includes(pr.user.login)) {
+      logger.info(`Squashing and merging PR ${pr.number}`);
+      try {
+        const data = await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge', {
+          owner: 'mikevalstar',
+          repo: 'chaosbot',
+          pull_number: pr.number,
+          merge_method: 'squash',
+          commit_title: pr.title,
+          commit_message: 'Auto merged by the agent of chaos',
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+        });
+        logger.info(`Squashed and merged PR ${pr.number}: ${data}`);
+      } catch (error) {
+        logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
+      }
     }
   }
 
