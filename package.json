@@ -1,0 +1,23 @@
+{
+  "name": "chaosbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GLWTPL",
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sqlite3",
+      "better-sqlite3", 
+      "sharp"
+    ]
+  }
+}
