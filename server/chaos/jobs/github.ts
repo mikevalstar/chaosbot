@@ -44,8 +44,8 @@ export async function githubCheckPRs() {
         execSync(
           `cd ${process.env.FOLDER} ; git pull ; pnpm install ; cd server/chaos ; npx drizzle-kit push`,
         );
-        execSync(`pm2 restart chaos`);
         execSync(`cd ${process.env.FOLDER}; cd apps/dashboard; pnpm run build`);
+        execSync(`pm2 restart chaos`); // needs to be last, causes a restart of the app
       } catch (error) {
         logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
       }
