@@ -6,7 +6,7 @@ export const env = sqliteTable('bot_env', {
 });
 
 export const people = sqliteTable('people', {
-  id: text().primaryKey(),
+  id: int().primaryKey({ autoIncrement: true }),
   slackId: text().notNull(),
   name: text().notNull(),
   keyInfo: text().notNull(),

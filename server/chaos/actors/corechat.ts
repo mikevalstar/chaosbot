@@ -1,11 +1,9 @@
-import { env } from '@/db/schema';
+import { getCoreMemory, getUserMemory, storeCoreMemory, storeUserMemory } from '@/lib/botmemory';
 import { DEVELOPER_PROMPT_MAIN } from '@/lib/const';
-import db from '@/lib/db';
 import openai from '@/lib/openai';
 import type { KnownEventFromType, SayFn } from '@slack/bolt';
 import dayjs from 'dayjs';
-import { eq } from 'drizzle-orm';
-import { Tool } from 'openai/resources/responses/responses';
+import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
 
 const AI_MODEL = 'gpt-4o-mini';
@@ -45,11 +43,6 @@ async function listModels() {
 }
 //listModels();
 
-async function getCoreMemory() {
-  const coreMemory = await db.select().from(env).where(eq(env.id, 'core_memory'));
-  return coreMemory[0].value;
-}
-
 const functionSchema: Tool[] = [
   {
     type: 'function',
@@ -83,6 +76,45 @@ const functionSchema: Tool[] = [
         },
       },
       required: ['memory'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function',
+    name: 'get_user_memory',
+    description: 'Retrieves your memory about a specific user',
+    strict: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          description: 'The user ID to retrieve memory about',
+        },
+      },
+      required: ['userId'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function',
+    name: 'store_user_memory',
+    description:
+      'Replace your memories about a user (you should probably read your memories before updating them)',
+    strict: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          description: 'The user ID to store memory about',
+        },
+        memory: {
+          type: 'string',
+          description: 'Replace your memopries about the user, limited to 4000 characters',
+        },
+      },
+      required: ['userId', 'memory'],
       additionalProperties: false,
     },
   },
@@ -143,8 +175,10 @@ export default async function corechat(
 
       let currentTurn = 0;
       let didSay = false;
+      let murderbot_reply = false;
 
       while (currentTurn < MAX_TURNS) {
+        console.log('messages', messages);
         const response = await openai.responses.create({
           model: AI_MODEL,
           tools: functionSchema,
@@ -154,6 +188,10 @@ export default async function corechat(
         });
 
         if (response.output) {
+          if (didSay) {
+            murderbot_reply = true;
+          }
+
           console.info(response.output);
           for (const item of response.output) {
             if (item.type === 'function_call') {
@@ -161,29 +199,66 @@ export default async function corechat(
               switch (item.name) {
                 case 'say':
                   await say(args.message);
+                  // insert into short term memory as a user message from chaosbot
+                  storeMessage(channel, 'chaosbot', args.message);
                   didSay = true;
-                  break;
-                case 'core_store_memory':
-                  await db.update(env).set({ value: args.memory }).where(eq(env.id, 'core_memory'));
                   messages.push(item);
                   messages.push({
                     type: 'function_call_output',
-                    call_id: item.id || 'unknown',
+                    call_id: item.call_id || 'unknown',
+                    output: 'MESSAGE SENT TO USERS',
+                  });
+                  break;
+                case 'core_store_memory':
+                  await storeCoreMemory(args.memory);
+                  messages.push(item);
+                  messages.push({
+                    type: 'function_call_output',
+                    call_id: item.call_id || 'unknown',
                     output: 'CORE MEMORY UPDATED',
                   });
                   console.info('CORE MEMORY UPDATED:' + args.memory);
                   break;
+                case 'get_user_memory':
+                  const userMemory = await getUserMemory(args.userId);
+                  messages.push(item);
+                  messages.push({
+                    type: 'function_call_output',
+                    call_id: item.call_id || 'unknown',
+                    output: userMemory || 'No memory found for this user.',
+                  });
+                  break;
+                case 'store_user_memory':
+                  await storeUserMemory(args.userId, args.memory);
+                  messages.push(item);
+                  messages.push({
+                    type: 'function_call_output',
+                    call_id: item.call_id || 'unknown',
+                    output: 'USER MEMORY REPLACED',
+                  });
+                  console.info(`USER MEMORY REPLACED for ${args.userId}: ${args.memory}`);
+                  break;
               }
             } else {
               // TODO: log anomoly here
+              console.warn('Unknown item in response:', item);
+              messages.push(item);
             }
+          }
+
+          if (didSay && !murderbot_reply) {
+            messages.push({
+              role: 'developer',
+              content:
+                '(MESSAGE FROM MURDERBOT) - I have sent your messages to the team, is theer any last memories you want to save? if so call those functions now before I have to put you into standby mode!',
+            });
           }
         } else {
           console.warn('No response from OpenAI');
           break;
         }
 
-        if (didSay) {
+        if (didSay && murderbot_reply) {
           break;
         }
 
