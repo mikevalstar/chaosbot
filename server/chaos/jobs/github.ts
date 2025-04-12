@@ -28,7 +28,7 @@ export async function githubCheckPRs() {
           'X-GitHub-Api-Version': '2022-11-28',
         },
       });
-      logger.info(`Squashed and merged PR ${pr.number}: ${data.message}`);
+      logger.info(`Squashed and merged PR ${pr.number}: ${data}`);
     } catch (error) {
       logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
     }
