@@ -52,5 +52,5 @@ export async function githubCheckPRs() {
     }
   }
 
-  setTimeout(githubCheckPRs, 60 * 1000);
+  setTimeout(githubCheckPRs, 10 * 60 * 1000);
 }
