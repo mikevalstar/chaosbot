@@ -3,6 +3,7 @@ import 'dotenv/config';
 import corechat from './actors/corechat';
 import './api/index';
 import { coreboot } from './jobs/coreboot';
+import { githubCheckPRs } from './jobs/github';
 import fastifyServer from './lib/fastify';
 import logger from './lib/log';
 import slackApp from './lib/slack';
@@ -16,6 +17,7 @@ fastifyServer.listen({ port: Number(process.env.PORT) || 8080 }, (err, address) 
 
   // booting the core
   coreboot();
+  githubCheckPRs();
 
   // start slack app
   slackApp.start(process.env.PORT_SLACK || 3000);
