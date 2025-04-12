@@ -11,11 +11,18 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TodoImport } from './routes/todo'
 import { Route as IndexImport } from './routes/index'
 import { Route as MemoryIndexImport } from './routes/memory/index'
 import { Route as MemoryUsersImport } from './routes/memory/users'
 
 // Create/Update Routes
+
+const TodoRoute = TodoImport.update({
+  id: '/todo',
+  path: '/todo',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -46,6 +53,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/todo': {
+      id: '/todo'
+      path: '/todo'
+      fullPath: '/todo'
+      preLoaderRoute: typeof TodoImport
+      parentRoute: typeof rootRoute
+    }
     '/memory/users': {
       id: '/memory/users'
       path: '/memory/users'
@@ -67,12 +81,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory': typeof MemoryIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory': typeof MemoryIndexRoute
 }
@@ -80,27 +96,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory/': typeof MemoryIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/memory/users' | '/memory'
+  fullPaths: '/' | '/todo' | '/memory/users' | '/memory'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/memory/users' | '/memory'
-  id: '__root__' | '/' | '/memory/users' | '/memory/'
+  to: '/' | '/todo' | '/memory/users' | '/memory'
+  id: '__root__' | '/' | '/todo' | '/memory/users' | '/memory/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TodoRoute: typeof TodoRoute
   MemoryUsersRoute: typeof MemoryUsersRoute
   MemoryIndexRoute: typeof MemoryIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TodoRoute: TodoRoute,
   MemoryUsersRoute: MemoryUsersRoute,
   MemoryIndexRoute: MemoryIndexRoute,
 }
@@ -116,12 +135,16 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/todo",
         "/memory/users",
         "/memory/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/todo": {
+      "filePath": "todo.tsx"
     },
     "/memory/users": {
       "filePath": "memory/users.tsx"
