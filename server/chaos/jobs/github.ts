@@ -1,9 +1,16 @@
 //import { Octokit } from 'octokit';
+import { execSync } from 'child_process';
+
 import logger from '../lib/log';
 
 const validUsers = ['mikevalstar'];
 
 export async function githubCheckPRs() {
+  if (!process.env.GITHUB_TOKEN) {
+    logger.warn('GITHUB_TOKEN is not set, this job will not run');
+    return;
+  }
+
   const { Octokit } = await import('octokit');
 
   const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -32,6 +39,13 @@ export async function githubCheckPRs() {
           },
         });
         logger.info(`Squashed and merged PR ${pr.number}: ${data}`);
+
+        // run the commands to pull the data, pnpm install, and drizzxlekit this bitch
+        execSync(
+          `cd ${process.env.FOLDER} ; git pull ; pnpm install ; cd server/chaos ; npx drizzle-kit push`,
+        );
+        execSync(`pm2 restart chaos`);
+        execSync(`cd ${process.env.FOLDER}; cd apps/dashboard; pnpm run build`);
       } catch (error) {
         logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
       }
