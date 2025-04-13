@@ -109,11 +109,11 @@ export async function getChannelInfo(channelId: string) {
 
   try {
     const channel = await app.client.conversations.info({ channel: channelId });
-    if (channel.channel?.is_member && channel.channel?.is_channel) {
+    if (channel.channel?.is_member && (channel.channel?.is_channel || channel.channel?.is_group)) {
       channelStore[channelId] = channel.channel?.name || 'unknown';
       return { name: channelStore[channelId], channel: true };
     } else {
-      console.info('Channel not found', channelId, channel.channel);
+      console.info('Channel not found', channelId);
       nonChannelStore[channelId] = channel.channel?.name || 'unknown';
       return { name: nonChannelStore[channelId], channel: false };
     }
