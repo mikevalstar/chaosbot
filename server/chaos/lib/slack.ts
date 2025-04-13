@@ -5,6 +5,7 @@ import { App, LogLevel } from '@slack/bolt';
 import { eq } from 'drizzle-orm';
 
 import { PR_MERGED_PROMPT } from './const';
+import logger from './log';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -186,6 +187,12 @@ async function boot() {
     if (channelInfo) {
       const prsToAnnounce = await db.select().from(prHistory).where(eq(prHistory.announced, 0));
 
+      if (prsToAnnounce.length > 0) {
+        logger.info(`Announcing ${prsToAnnounce.length} PRs to ${announceChannel}`);
+      } else {
+        logger.info('No PRs to announce');
+      }
+
       for (const pr of prsToAnnounce) {
         const message = await quickAI(
           PR_MERGED_PROMPT({ title: pr.title, author: pr.authorLogin }),
@@ -195,9 +202,16 @@ async function boot() {
           channel: channelInfo,
           text: message || '',
         });
+
+        logger.info(`Announced ${pr.title} to ${announceChannel}: ${message}`);
+
         await db.update(prHistory).set({ announced: 1 }).where(eq(prHistory.id, pr.id)).execute();
       }
+    } else {
+      logger.warn(`Announce channel ${announceChannel} not found`);
     }
+  } else {
+    logger.warn('No announce channel set, skipping');
   }
 
   await storeUsers();
