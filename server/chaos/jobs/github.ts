@@ -1,7 +1,7 @@
 //import { Octokit } from 'octokit';
 import { prHistory } from '@/db/schema';
 import db from '@/lib/db';
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { eq } from 'drizzle-orm';
 
 import logger from '../lib/log';
@@ -53,10 +53,10 @@ export async function githubCheckPRs() {
 
         // run the commands to pull the data, pnpm install, and drizzle kit this bitch
         execSync(
-          `cd ${process.env.FOLDER} ; git pull ; pnpm install ; cd server/chaos ; npx drizzle-kit push`,
+          `cd ${process.env.FOLDER} ; git checkout pnpm-lock.yaml ; git pull ; pnpm install ; cd server/chaos ; npx drizzle-kit push`,
         );
         execSync(`cd ${process.env.FOLDER}; cd apps/dashboard; pnpm run build`);
-        execSync(`pm2 restart chaos`); // needs to be last, causes a restart of the app
+        exec(`pm2 restart chaos`); // needs to be last, causes a restart of the app
       } catch (error) {
         logger.error(`Error squashing and merging PR ${pr.number}: ${error}`);
       }
