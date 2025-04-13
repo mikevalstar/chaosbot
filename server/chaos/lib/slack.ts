@@ -1,7 +1,10 @@
-import { slackKnownUsers } from '@/db/schema';
+import { prHistory, slackChannels, slackKnownUsers } from '@/db/schema';
 import db from '@/lib/db';
-import { App, Assistant, LogLevel } from '@slack/bolt';
+import { quickAI } from '@/lib/openai';
+import { App, LogLevel } from '@slack/bolt';
 import { eq } from 'drizzle-orm';
+
+import { PR_MERGED_PROMPT } from './const';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -64,8 +67,6 @@ async function loadUsers() {
   }
 }
 
-loadUsers();
-
 // Periodically store all users in the database
 async function storeUsers() {
   const currentUsers = await db.select().from(slackKnownUsers);
@@ -91,6 +92,118 @@ async function storeUsers() {
   setTimeout(storeUsers, 60 * 1000);
 }
 
-storeUsers();
+// channels
+
+const channelStore: Record<string, string> = {};
+const nonChannelStore: Record<string, string> = {}; // for DMs and other non-channel things
+
+export async function getChannelInfo(channelId: string) {
+  if (channelStore[channelId]) {
+    return { name: channelStore[channelId], channel: true };
+  }
+
+  if (nonChannelStore[channelId]) {
+    return { name: nonChannelStore[channelId], channel: false };
+  }
+
+  try {
+    const channel = await app.client.conversations.info({ channel: channelId });
+    if (channel.channel?.is_member && channel.channel?.is_channel) {
+      channelStore[channelId] = channel.channel?.name || 'unknown';
+      return { name: channelStore[channelId], channel: true };
+    } else {
+      nonChannelStore[channelId] = channel.channel?.name || 'unknown';
+      return { name: nonChannelStore[channelId], channel: false };
+    }
+  } catch (error) {
+    console.error('Error getting channel info', error);
+    return { name: 'unknown', channel: false };
+  }
+}
+
+export async function channelByName(name: string) {
+  for (const channelId of Object.keys(channelStore)) {
+    if (channelStore[channelId] === name) {
+      return channelId;
+    }
+  }
+  return null;
+}
+
+export async function getAllChannels() {
+  let store = [];
+  for (const channelId of Object.keys(channelStore)) {
+    store.push({
+      id: channelId,
+      name: channelStore[channelId],
+    });
+  }
+  return store;
+}
+
+async function loadChannels() {
+  const currentChannels = await db.select().from(slackChannels);
+  for (const channel of currentChannels) {
+    channelStore[channel.slackId] = channel.name;
+  }
+}
+
+export async function storeChannels() {
+  const channels = await getAllChannels();
+  const currentChannels = await db.select().from(slackChannels);
+
+  for (const channel of channels) {
+    if (!currentChannels.find((c) => c.slackId === channel.id)) {
+      await db
+        .insert(slackChannels)
+        .values({
+          slackId: channel.id,
+          name: channel.name,
+        })
+        .execute();
+    } else {
+      await db
+        .update(slackChannels)
+        .set({ name: channel.name })
+        .where(eq(slackChannels.slackId, channel.id))
+        .execute();
+    }
+  }
+
+  setTimeout(storeChannels, 60 * 1000);
+}
+
+// slack boot sequence
+
+async function boot() {
+  await loadUsers();
+  await loadChannels();
+
+  // announce coming online
+  const announceChannel = process.env.SLACK_ANNOUNCE_CHANNEL;
+  if (announceChannel) {
+    const channelInfo = await channelByName(announceChannel);
+    if (channelInfo) {
+      const prsToAnnounce = await db.select().from(prHistory).where(eq(prHistory.announced, 0));
+
+      for (const pr of prsToAnnounce) {
+        const message = await quickAI(
+          PR_MERGED_PROMPT({ title: pr.title, author: pr.authorLogin }),
+        );
+
+        await app.client.chat.postMessage({
+          channel: channelInfo,
+          text: message || '',
+        });
+        await db.update(prHistory).set({ announced: 1 }).where(eq(prHistory.id, pr.id)).execute();
+      }
+    }
+  }
+
+  await storeUsers();
+  await storeChannels();
+}
+
+boot();
 
 export default app;

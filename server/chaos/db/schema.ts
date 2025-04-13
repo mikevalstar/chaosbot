@@ -18,6 +18,12 @@ export const slackKnownUsers = sqliteTable('slack_known_users', {
   name: text().notNull(),
 });
 
+export const slackChannels = sqliteTable('slack_channels', {
+  id: int().primaryKey({ autoIncrement: true }),
+  slackId: text().notNull(),
+  name: text().notNull(),
+});
+
 export const prHistory = sqliteTable('pr_history', {
   id: int().primaryKey(),
   prId: int().notNull(),
@@ -32,4 +38,5 @@ export const prHistory = sqliteTable('pr_history', {
   state: text().notNull(),
   fromBranch: text().notNull(),
   toBranch: text().notNull(),
+  announced: int().default(0),
 });
