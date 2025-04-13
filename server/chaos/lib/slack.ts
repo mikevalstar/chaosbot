@@ -113,6 +113,7 @@ export async function getChannelInfo(channelId: string) {
       channelStore[channelId] = channel.channel?.name || 'unknown';
       return { name: channelStore[channelId], channel: true };
     } else {
+      console.info('Channel not found', channelId, channel.channel);
       nonChannelStore[channelId] = channel.channel?.name || 'unknown';
       return { name: nonChannelStore[channelId], channel: false };
     }
@@ -150,6 +151,7 @@ async function loadChannels() {
 }
 
 export async function storeChannels() {
+  logger.info('Storing channels');
   const channels = await getAllChannels();
   const currentChannels = await db.select().from(slackChannels);
 

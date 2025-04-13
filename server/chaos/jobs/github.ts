@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 import logger from '../lib/log';
 
-const validUsers = ['mikevalstar'];
+const validUsers = ['mikevalstar', 'especially'];
 
 export async function githubCheckPRs() {
   if (!process.env.GITHUB_TOKEN) {
@@ -33,7 +33,7 @@ export async function githubCheckPRs() {
       !pr.draft &&
       pr.base.ref === 'main' &&
       pr.state === 'open' &&
-      validUsers.includes(pr.user.login)
+      validUsers.includes(pr.user.login.toLowerCase())
     ) {
       logger.info(`Squashing and merging PR ${pr.number}`);
       try {
