@@ -17,3 +17,19 @@ export const slackKnownUsers = sqliteTable('slack_known_users', {
   slackId: text().notNull(),
   name: text().notNull(),
 });
+
+export const prHistory = sqliteTable('pr_history', {
+  id: int().primaryKey(),
+  prId: int().notNull(),
+  title: text().notNull(),
+  url: text().notNull(),
+  createdAt: text().notNull(),
+  updatedAt: text().notNull(),
+  authorAssociation: text().notNull(),
+  authorLogin: text().notNull(),
+  authorAvatarUrl: text(),
+  authorUrl: text(),
+  state: text().notNull(),
+  fromBranch: text().notNull(),
+  toBranch: text().notNull(),
+});

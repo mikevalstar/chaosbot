@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TodoImport } from './routes/todo'
+import { Route as PrHistoryImport } from './routes/pr-history'
 import { Route as IndexImport } from './routes/index'
 import { Route as MemoryIndexImport } from './routes/memory/index'
 import { Route as MemoryUsersImport } from './routes/memory/users'
@@ -21,6 +22,12 @@ import { Route as MemoryUsersImport } from './routes/memory/users'
 const TodoRoute = TodoImport.update({
   id: '/todo',
   path: '/todo',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PrHistoryRoute = PrHistoryImport.update({
+  id: '/pr-history',
+  path: '/pr-history',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -53,6 +60,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/pr-history': {
+      id: '/pr-history'
+      path: '/pr-history'
+      fullPath: '/pr-history'
+      preLoaderRoute: typeof PrHistoryImport
+      parentRoute: typeof rootRoute
+    }
     '/todo': {
       id: '/todo'
       path: '/todo'
@@ -81,6 +95,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/pr-history': typeof PrHistoryRoute
   '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory': typeof MemoryIndexRoute
@@ -88,6 +103,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pr-history': typeof PrHistoryRoute
   '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory': typeof MemoryIndexRoute
@@ -96,6 +112,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/pr-history': typeof PrHistoryRoute
   '/todo': typeof TodoRoute
   '/memory/users': typeof MemoryUsersRoute
   '/memory/': typeof MemoryIndexRoute
@@ -103,15 +120,16 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/todo' | '/memory/users' | '/memory'
+  fullPaths: '/' | '/pr-history' | '/todo' | '/memory/users' | '/memory'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/todo' | '/memory/users' | '/memory'
-  id: '__root__' | '/' | '/todo' | '/memory/users' | '/memory/'
+  to: '/' | '/pr-history' | '/todo' | '/memory/users' | '/memory'
+  id: '__root__' | '/' | '/pr-history' | '/todo' | '/memory/users' | '/memory/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrHistoryRoute: typeof PrHistoryRoute
   TodoRoute: typeof TodoRoute
   MemoryUsersRoute: typeof MemoryUsersRoute
   MemoryIndexRoute: typeof MemoryIndexRoute
@@ -119,6 +137,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrHistoryRoute: PrHistoryRoute,
   TodoRoute: TodoRoute,
   MemoryUsersRoute: MemoryUsersRoute,
   MemoryIndexRoute: MemoryIndexRoute,
@@ -135,6 +154,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/pr-history",
         "/todo",
         "/memory/users",
         "/memory/"
@@ -142,6 +162,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/pr-history": {
+      "filePath": "pr-history.tsx"
     },
     "/todo": {
       "filePath": "todo.tsx"

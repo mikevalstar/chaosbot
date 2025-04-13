@@ -7,6 +7,7 @@ import {
   CheckSquare,
   Home,
   LayoutDashboard,
+  List,
   LogOut,
   Moon,
   Settings,
@@ -43,6 +44,7 @@ const navigation = [
     items: [
       { name: 'Memory', href: '/memory', icon: Brain },
       { name: 'User Memory', href: '/memory/users', icon: Users },
+      { name: 'PR History', href: '/pr-history', icon: List },
       { name: 'Settings', href: '/settings', icon: Settings },
       { name: 'Logs', href: '/logs', icon: BarChart3 },
     ],

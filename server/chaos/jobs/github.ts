@@ -1,5 +1,8 @@
 //import { Octokit } from 'octokit';
+import { prHistory } from '@/db/schema';
+import db from '@/lib/db';
 import { execSync } from 'child_process';
+import { eq } from 'drizzle-orm';
 
 import logger from '../lib/log';
 
@@ -24,7 +27,14 @@ export async function githubCheckPRs() {
 
   // for each one squash and merge
   for (const pr of prs) {
-    if (validUsers.includes(pr.user.login)) {
+    storePrDetails(pr);
+
+    if (
+      !pr.draft &&
+      pr.base.ref === 'main' &&
+      pr.state === 'open' &&
+      validUsers.includes(pr.user.login)
+    ) {
       logger.info(`Squashing and merging PR ${pr.number}`);
       try {
         const data = await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge', {
@@ -39,8 +49,9 @@ export async function githubCheckPRs() {
           },
         });
         logger.info(`Squashed and merged PR ${pr.number}: ${data}`);
+        setMerged(pr.number);
 
-        // run the commands to pull the data, pnpm install, and drizzxlekit this bitch
+        // run the commands to pull the data, pnpm install, and drizzle kit this bitch
         execSync(
           `cd ${process.env.FOLDER} ; git pull ; pnpm install ; cd server/chaos ; npx drizzle-kit push`,
         );
@@ -53,4 +64,50 @@ export async function githubCheckPRs() {
   }
 
   setTimeout(githubCheckPRs, 10 * 60 * 1000);
+}
+
+async function storePrDetails(pr: any) {
+  const prDetails = await db.select().from(prHistory).where(eq(prHistory.prId, pr.id));
+  if (prDetails.length > 0) {
+    // update the prHistory
+    await db
+      .update(prHistory)
+      .set({
+        title: pr.title || 'unknown',
+        url: pr.html_url || 'unknown',
+        updatedAt: pr.updated_at || 'unknown',
+        authorAssociation: pr.author_association || 'unknown',
+        authorLogin: pr.user?.login || 'unknown',
+        authorAvatarUrl: pr.user?.avatar_url || 'unknown',
+        authorUrl: pr.user?.url || 'unknown',
+        state: pr.state || 'unknown',
+        fromBranch: pr.head.ref || 'unknown',
+        toBranch: pr.base.ref || 'unknown',
+      })
+      .where(eq(prHistory.prId, pr.id));
+  } else {
+    await db.insert(prHistory).values({
+      prId: pr.id,
+      title: pr.title || 'unknown',
+      url: pr.html_url || 'unknown',
+      createdAt: pr.created_at || 'unknown',
+      updatedAt: pr.updated_at || 'unknown',
+      authorAssociation: pr.author_association || 'unknown',
+      authorLogin: pr.user?.login || 'unknown',
+      authorAvatarUrl: pr.user?.avatar_url || 'unknown',
+      authorUrl: pr.user?.url || 'unknown',
+      state: pr.state || 'unknown',
+      fromBranch: pr.head.ref || 'unknown',
+      toBranch: pr.base.ref || 'unknown',
+    });
+  }
+}
+
+async function setMerged(prId: number) {
+  await db
+    .update(prHistory)
+    .set({
+      state: 'merged',
+    })
+    .where(eq(prHistory.prId, prId));
 }
