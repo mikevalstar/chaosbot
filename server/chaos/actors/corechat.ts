@@ -2,7 +2,7 @@ import { getCoreMemory, getUserMemory, storeCoreMemory, storeUserMemory } from '
 import { DEVELOPER_PROMPT_MAIN } from '@/lib/const';
 import logger from '@/lib/log';
 import openai from '@/lib/openai';
-import { allUsersByName, getUserInfo } from '@/lib/slack';
+import { allUsersByName, getChannelInfo, getUserInfo } from '@/lib/slack';
 import type { KnownEventFromType, SayFn } from '@slack/bolt';
 import dayjs from 'dayjs';
 import { ResponseInput, Tool } from 'openai/resources/responses/responses';
@@ -21,6 +21,11 @@ const messageSchema = z.object({
 const shortTermMemory: Record<string, z.infer<typeof messageSchema>[]> = {};
 
 async function storeMessage(channel: string, user: string, message: string) {
+  const channelName = await getChannelInfo(channel);
+  if (channelName) {
+    logger.info(`Storing message in channel ${channelName.name}: ${message}`);
+  }
+
   const userName = await getUserInfo(user);
   let msg = message;
   const allUsers = await allUsersByName();

@@ -27,7 +27,11 @@
         "groups:history",
         "chat:write",
         "mpim:history",
-        "users:read"
+        "users:read",
+        "channels:read",
+        "groups:read",
+        "mpim:read",
+        "im:read"
       ]
     }
   },
