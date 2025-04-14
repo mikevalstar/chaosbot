@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
 
-const AI_MODEL = 'gpt-4o';
+const AI_MODEL = 'o3-mini';
 const MAX_TURNS = 7;
 // https://platform.openai.com/docs/overview
 
