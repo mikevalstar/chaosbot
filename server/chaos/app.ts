@@ -26,9 +26,9 @@ fastifyServer.listen({ port: Number(process.env.PORT) || 8080 }, (err, address) 
     if (message.type === 'message' && 'text' in message && 'user' in message) {
       const channel = message.channel;
       const botMentioned = message.text?.includes(`<@${context.botUserId}>`);
-      const botNameMentioned = message.text
-        ?.toLowerCase()
-        .includes(process.env.SLACK_BOT_NAME?.toLowerCase() || '');
+      const botNameMentioned = new RegExp(
+        `\\b${process.env.SLACK_BOT_NAME?.toLowerCase() || ''}\\b`,
+      ).test(message.text?.toLowerCase() || '');
       // detect if it's a dm
       const isDm = message.channel_type === 'im';
 

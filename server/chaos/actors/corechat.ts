@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
 
-const AI_MODEL = 'o3-mini';
+const AI_MODEL = 'gpt-4.1-mini';
 const MAX_TURNS = 7;
 // https://platform.openai.com/docs/overview
 
@@ -22,9 +22,6 @@ const shortTermMemory: Record<string, z.infer<typeof messageSchema>[]> = {};
 
 async function storeMessage(channel: string, user: string, message: string) {
   const channelName = await getChannelInfo(channel);
-  if (channelName) {
-    logger.info(`Storing message in channel ${channelName.name}: ${message}`);
-  }
 
   const userName = await getUserInfo(user);
   let msg = message;
@@ -42,7 +39,9 @@ async function storeMessage(channel: string, user: string, message: string) {
     user: userName,
   });
 
-  logger.info(`Stored message from ${userName} in channel ${channel}: ${msg}`);
+  logger.info(
+    `Stored message from ${userName} in channel ${channelName.name} (${channel}): ${msg}`,
+  );
 
   // if the channel has more than 25 messages, remove the oldest one
   if (shortTermMemory[channel].length > 25) {
@@ -98,7 +97,7 @@ const functionSchema: Tool[] = [
   {
     type: 'function',
     name: 'get_user_memory',
-    description: 'Retrieves your memory about a specific user',
+    description: 'Retrieves your memory about a specific user using their id',
     strict: true,
     parameters: {
       type: 'object',
@@ -131,6 +130,23 @@ const functionSchema: Tool[] = [
         },
       },
       required: ['userId', 'memory'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function',
+    name: 'done',
+    description: 'This function is used to end the conversation if you have nothing to say',
+    strict: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        reason: {
+          type: 'string',
+          description: 'The reason you are ending the conversation',
+        },
+      },
+      required: ['reason'],
       additionalProperties: false,
     },
   },
@@ -175,7 +191,7 @@ export default async function corechat(
         },
         {
           role: 'user',
-          content: `A message has come in for you: \n ${formatted__recent_history}`,
+          content: `A message has come in for you, this also includes recent history of the team and yourself: \n ${formatted__recent_history}`,
         },
       ];
 
@@ -187,7 +203,7 @@ export default async function corechat(
         const response = await openai.responses.create({
           model: AI_MODEL,
           tools: functionSchema,
-          //reasoning: { effort: 'medium' },
+          //reasoning: { effort: 'high' },
           store: false,
           input: messages,
         });
@@ -244,10 +260,16 @@ export default async function corechat(
                   });
                   logger.info(`USER MEMORY REPLACED for ${args.userId}: ${args.memory}`);
                   break;
+                case 'done':
+                  murderbot_reply = true;
+                  didSay = true;
+                  logger.info('Conversation ended by bot');
+                  break;
               }
             } else {
               // TODO: log anomoly here
               logger.warn('Unknown item in response:', item);
+              console.warn('Unknown item in response:', item);
               messages.push(item);
             }
           }
