@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 import logger from '../lib/log';
 
-const validUsers = ['mikevalstar', 'especially'];
+const validUsers = ['mikevalstar', 'especially', 'americobarros'];
 
 export async function githubCheckPRs() {
   if (!process.env.GITHUB_TOKEN) {
