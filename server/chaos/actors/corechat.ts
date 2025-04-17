@@ -7,6 +7,7 @@ import type { KnownEventFromType, SayFn } from '@slack/bolt';
 import dayjs from 'dayjs';
 import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
+import { suggestEmojis } from '@/lib/emoji';
 
 const AI_MODEL = 'gpt-4.1-mini';
 const MAX_TURNS = 7;
@@ -179,6 +180,7 @@ export default async function corechat(
       formatted__recent_history += 'JSON MESSAGE SHORT TERM MEMORY: ' + JSON.stringify(mem);
 
       const coreMemory = await getCoreMemory();
+      const suggestedEmojis = suggestEmojis();
 
       let messages: ResponseInput = [
         {
@@ -188,6 +190,9 @@ export default async function corechat(
         {
           role: 'developer',
           content: '# CORE MEMORY DUMP\n' + coreMemory,
+        },{
+          role: 'developer',
+          content: `# AVAILABLE EMOJIS\nYou can use these Slack emojis in your responses: ${suggestedEmojis.join(', ')}`,
         },
         {
           role: 'user',
