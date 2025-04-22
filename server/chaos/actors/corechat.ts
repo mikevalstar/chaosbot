@@ -192,7 +192,7 @@ export default async function corechat(
           content: '# CORE MEMORY DUMP\n' + coreMemory,
         },{
           role: 'developer',
-          content: `# AVAILABLE EMOJIS\nYou can use these Slack emojis in your responses: ${suggestedEmojis.join(', ')}`,
+          content: `# AVAILABLE EMOJIS\nYou can use the following Slack emojis in your responses, be sure to copy them exactly as they are written without correcting typos, making sure to include the colon at the beginning and end of each emoji: :${suggestedEmojis.join(': , :')}:`,
         },
         {
           role: 'user',
