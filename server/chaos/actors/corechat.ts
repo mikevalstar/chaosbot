@@ -80,7 +80,7 @@ const functionSchema: Tool[] = [
   {
     type: 'function',
     name: 'achievement',
-    description: 'give an acheivement',
+    description: 'give an acheivement in the style of Dungeon Crawler Carl',
     strict: true,
     parameters: {
       type: 'object',
@@ -152,7 +152,7 @@ const functionSchema: Tool[] = [
         },
         memory: {
           type: 'string',
-          description: 'Replace your memopries about the user, limited to 4000 characters',
+          description: 'Replace your memories about the user, limited to 4000 characters',
         },
       },
       required: ['userId', 'memory'],
