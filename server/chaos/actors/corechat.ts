@@ -182,7 +182,7 @@ async function SayHelper(message: string) {
   // find any uses of @ mentions and replace them with a slack mention using the id
   const users = await allUsersByName();
   for (const user of users) {
-    message = message.replace(`@${user.name}`, `<@${user.id}>`);
+    message = message.replace(new RegExp(`@${user.name}`, 'i'), `<@${user.id}>`);
   }
   return message;
 }
@@ -191,7 +191,7 @@ async function AchievementHelper(title: string, message: string, reward: string)
   // find any uses of @ mentions and replace them with a slack mention using the id
   const users = await allUsersByName();
   for (const user of users) {
-    message = message.replace(`@${user.name}`, `<@${user.id}>`);
+    message = message.replace(new RegExp(`@${user.name}`, 'i'), `<@${user.id}>`);
   }
 
   return `:trophy: *Achievement Unlocked: ${title}*\n\n${message}\n\n:gift: *Reward:* ${reward}`;
