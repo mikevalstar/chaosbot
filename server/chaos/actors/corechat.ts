@@ -70,10 +70,35 @@ const functionSchema: Tool[] = [
       properties: {
         message: {
           type: 'string',
-          description: 'The message to say, limited to 4000 characters',
+          description: 'The message to say, limited to 500 words',
         },
       },
       required: ['message'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function',
+    name: 'achievement',
+    description: 'give an acheivement',
+    strict: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          description: 'title of the achievement',
+        },
+        message: {
+          type: 'string',
+          description: 'The message',
+        },
+        reward: {
+          type: 'string',
+          description: 'the reward for the achievement',
+        },
+      },
+      required: ['title', 'message', 'reward'],
       additionalProperties: false,
     },
   },
@@ -162,6 +187,16 @@ async function SayHelper(message: string) {
   return message;
 }
 
+async function AchievementHelper(title: string, message: string, reward: string) {
+  // find any uses of @ mentions and replace them with a slack mention using the id
+  const users = await allUsersByName();
+  for (const user of users) {
+    message = message.replace(`@${user.name}`, `<@${user.id}>`);
+  }
+
+  return `:trophy: *Achievement Unlocked: ${title}*\n\n${message}\n\n:gift: *Reward:* ${reward}`;
+}
+
 export default async function corechat(
   channel: string,
   message: KnownEventFromType<'message'>,
@@ -234,6 +269,13 @@ export default async function corechat(
                     output: 'MESSAGE SENT TO USERS',
                   });
                   logger.info('MESSAGE SENT TO USERS:' + args.message);
+                  break;
+                case 'achievement':
+                  await say(await AchievementHelper(args.title, args.message, args.reward));
+                  // insert into short term memory as a user message from chaosbot
+                  storeMessage(channel, 'chaosbot', args.title + ' ' + args.message + ' ' + args.reward);
+                  didSay = true;
+                  messages.push(item);
                   break;
                 case 'core_store_memory':
                   await storeCoreMemory(args.memory);
