@@ -9,7 +9,7 @@ import { ResponseInput, Tool } from 'openai/resources/responses/responses';
 import z from 'zod';
 import { suggestEmojis } from '@/lib/emoji';
 
-const AI_MODEL = 'gpt-4.1-mini';
+const AI_MODEL = 'gpt-4.1';
 const MAX_TURNS = 7;
 // https://platform.openai.com/docs/overview
 
