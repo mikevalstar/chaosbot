@@ -10,7 +10,7 @@ import z from 'zod';
 import { suggestEmojis } from '@/lib/emoji';
 
 const AI_MODEL = 'gpt-5-mini';
-const MAX_TURNS = 7;
+const MAX_TURNS = 20;
 // https://platform.openai.com/docs/overview
 
 const messageSchema = z.object({
@@ -243,7 +243,7 @@ export default async function corechat(
         const response = await openai.responses.create({
           model: AI_MODEL,
           tools: functionSchema,
-          //reasoning: { effort: 'high' },
+          //reasoning: { effort: 'low' },
           store: false,
           input: messages,
         });
@@ -338,6 +338,12 @@ export default async function corechat(
         }
 
         currentTurn++;
+        // TODO: remove this once we have a better way to end the conversation
+        if (currentTurn > MAX_TURNS) {
+          logger.warn('Conversation ended by bot, max turns reached');
+          await say('Chaosbot has reached my max turns ending the conversation to prevent AGI.');
+          break;
+        }
       }
     }
   }
