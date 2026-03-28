@@ -1,8 +1,9 @@
 import { defineConfig } from "vite-plus";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react()],
   server: {
     proxy: {
       "/api": {
