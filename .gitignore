@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Server log files
+**/log/
+
 # AI agent worktrees
 .claude/worktrees/
