@@ -3,14 +3,21 @@ packages:
   - packages/*
   - tools/*
 
-catalogMode: prefer
-
 catalog:
+  "@tanstack/react-query": ^5.95.2
+  "@tanstack/react-router": ^1.168.7
   "@types/node": ^24
+  "@types/react": ^19.2.14
+  "@types/react-dom": ^19.2.3
+  "@vitejs/plugin-react": ^6.0.1
+  react: ^19.2.4
+  react-dom: ^19.2.4
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
   vite-plus: latest
+  vitest: npm:@voidzero-dev/vite-plus-test@latest
+
+catalogMode: prefer
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
