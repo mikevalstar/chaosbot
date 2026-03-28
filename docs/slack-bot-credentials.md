@@ -6,12 +6,12 @@ This guide walks through obtaining all the credentials needed to run a Slack bot
 
 You will need the following environment variables:
 
-| Variable | Format | Purpose |
-|---|---|---|
-| `SLACK_BOT_TOKEN` | `xoxb-...` | Authenticates your bot for Slack API calls |
-| `SLACK_SIGNING_SECRET` | hex string | Verifies incoming requests are actually from Slack |
-| `SLACK_APP_TOKEN` | `xapp-...` | Enables Socket Mode (WebSocket connection to Slack) |
-| `OPENROUTER_API_KEY` | `sk-or-...` | Authenticates with OpenRouter for the AI SDK |
+| Variable               | Format      | Purpose                                             |
+| ---------------------- | ----------- | --------------------------------------------------- |
+| `SLACK_BOT_TOKEN`      | `xoxb-...`  | Authenticates your bot for Slack API calls          |
+| `SLACK_SIGNING_SECRET` | hex string  | Verifies incoming requests are actually from Slack  |
+| `SLACK_APP_TOKEN`      | `xapp-...`  | Enables Socket Mode (WebSocket connection to Slack) |
+| `OPENROUTER_API_KEY`   | `sk-or-...` | Authenticates with OpenRouter for the AI SDK        |
 
 ## Step 1: Create a Slack App
 
@@ -50,17 +50,17 @@ Socket Mode lets your bot connect via WebSocket instead of requiring a public HT
 2. Scroll to **Scopes** > **Bot Token Scopes**
 3. Add the following scopes:
 
-| Scope | Purpose |
-|---|---|
+| Scope               | Purpose                                   |
+| ------------------- | ----------------------------------------- |
 | `app_mentions:read` | Receive events when the bot is @mentioned |
-| `chat:write` | Send messages to channels and DMs |
-| `channels:history` | Read message history in public channels |
-| `channels:read` | View basic channel info |
-| `groups:history` | Read message history in private channels |
-| `im:history` | Read DM message history |
-| `im:read` | View basic DM info |
-| `mpim:history` | Read group DM history |
-| `users:read` | Look up user info (names, avatars, etc.) |
+| `chat:write`        | Send messages to channels and DMs         |
+| `channels:history`  | Read message history in public channels   |
+| `channels:read`     | View basic channel info                   |
+| `groups:history`    | Read message history in private channels  |
+| `im:history`        | Read DM message history                   |
+| `im:read`           | View basic DM info                        |
+| `mpim:history`      | Read group DM history                     |
+| `users:read`        | Look up user info (names, avatars, etc.)  |
 
 Add more scopes as needed for your use case (e.g. `reactions:write`, `files:read`).
 
