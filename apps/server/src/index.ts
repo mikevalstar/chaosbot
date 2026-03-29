@@ -1,5 +1,9 @@
+import { loadEnvFile } from "node:process";
+
+loadEnvFile(new URL("../.env", import.meta.url));
 import express from "express";
 import { logger } from "./lib/logger.js";
+import { startSlackBot } from "./slack/start.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -32,4 +36,9 @@ app.use("/api", api);
 
 app.listen(port, () => {
   logger.info(`Server running on http://localhost:${port}`);
+  try {
+    startSlackBot();
+  } catch (error) {
+    logger.error({ error });
+  }
 });

@@ -9,6 +9,10 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@openrouter/ai-sdk-provider": "catalog:",
+    "@slack/bolt": "catalog:",
+    "ai": "catalog:",
+    "dotenv": "catalog:",
     "express": "^5.1.0",
     "pino": "catalog:",
     "pino-roll": "catalog:"
